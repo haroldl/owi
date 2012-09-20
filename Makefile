@@ -1,6 +1,12 @@
 # sudo apt-get install libusb-1.0-0-dev
-owi: owi.c
-	gcc owi.c -o owi -lusb-1.0 -lncurses
+
+CFLAGS = -Wall
+
+owi: owi.o libowi.o
+	gcc owi.o libowi.o -o owi -lusb-1.0 -lncurses
+
+%.o: %.c
+	gcc $< $(CFLAGS) -c -o $@
 
 clean:
-	-rm -f owi
+	-rm -f owi owi.o libowi.o

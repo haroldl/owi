@@ -13,122 +13,11 @@
 #include <sys/types.h>
 #include <string.h>
 #include <ncurses.h>
-#include <libusb-1.0/libusb.h>
 
-#define EP_INTR (1 | LIBUSB_ENDPOINT_IN)
-
-#define ARM_VENDOR       0x1267
-#define ARM_PRODUCT      0x0000
-#define CMD_DATALEN      3
-
-struct libusb_device_handle *devh = NULL;
-
-libusb_device * find_arm(libusb_device **devs)
-{
-  libusb_device *dev;
-  int i = 0;
-
-  while ((dev = devs[i++]) != NULL) {
-    struct libusb_device_descriptor desc;
-    int r = libusb_get_device_descriptor(dev, &desc);
-    if (r < 0) {
-      printw("Failed to get device descriptor\n");
-      return NULL;
-    }
-    if(desc.idVendor == ARM_VENDOR &&
-       desc.idProduct == ARM_PRODUCT)
-      {
-	return dev;
-      }
-  }
-  return NULL;
-}
-
-int send_command(unsigned char b1, unsigned char b2, unsigned char b3)
-{
-  unsigned char cmd[3];
-  cmd[0] = b1;
-  cmd[1] = b2;
-  cmd[2] = b3;
-
-  printw("Sending %02X %02X %02X\n",
-	 (int)cmd[0],
-	 (int)cmd[1],
-	 (int)cmd[2]
-	 );
-
-  if (devh == NULL) {
-    return 0;
-  }
-
-  int actual_length = -1;
-  int r;
-
-  r = libusb_control_transfer(devh,
-			      0x40, //uint8_t     bmRequestType,
-			      6, //uint8_t    bRequest,
-			      0x100, //uint16_t   wValue,
-			      0,//uint16_t    wIndex,
-			      cmd,
-			      CMD_DATALEN,
-			      0    
-			      );
-    
-  if(!(r == 0 && actual_length >= CMD_DATALEN))
-    {
-      printw("Write err %d. len=%d\n",r,actual_length);
-    }
-
-  return r;
-}
-
-int stop()
-{
-  return send_command(0, 0, 0);
-}
-
-libusb_device ** detect_robot_arm()
-{
-  libusb_device **devs;
-  libusb_device *dev;
-  int r;
-  ssize_t cnt;
-
-  r = libusb_init(NULL);
-  if (r < 0) {
-    printw("Failed to initialize libusb\n");
-    return NULL;
-  }
-
-  libusb_set_debug(NULL,2);
-    
-  cnt = libusb_get_device_list(NULL, &devs);
-  if (cnt < 0)
-    return NULL;
-  dev=find_arm(devs);
-  if(!dev) {
-    printw("Robot Arm not found\n");
-    return NULL;
-  }
-
-  r = libusb_open(dev,&devh);
-  if(r!=0) {
-    printw("Error opening device\n");
-    libusb_free_device_list(devs, 1);
-    libusb_exit(NULL);
-    return NULL;
-  }
-
-  return devs;
-}
+#include "libowi.h"
 
 void event_loop()
 {
-  unsigned char cmd[3];
-  cmd[0] = 0;
-  cmd[1] = 0;
-  cmd[2] = 0;
-
   while (5 != 2) {
     char key = getch();
     if (key == 'q') {
@@ -152,9 +41,8 @@ void event_loop()
     /* ------- */
 
     case 'l':
-      printw("toggle light: ");
-      cmd[2] = 1 - cmd[2];
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("toggle light\n");
+      owi_toggle_light();
       break;
 
     /* ------- */
@@ -162,23 +50,18 @@ void event_loop()
     /* ------- */
 
     case 'y':
-      printw("m4 up: ");
-      cmd[0] &= 0x3f;
-      cmd[0] |= 0x80;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m4 up\n");
+      owi_m4_forward();
       break;
 
     case 'h':
-      printw("m4 off: ");
-      cmd[0] &= 0x3f;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m4 off\n");
+      owi_m4_off();
       break;
 
     case 'n':
-      printw("m4 down: ");
-      cmd[0] &= 0x3f;
-      cmd[0] |= 0x40;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m4 down\n");
+      owi_m4_reverse();
       break;
 
     /* ------- */
@@ -186,23 +69,18 @@ void event_loop()
     /* ------- */
 
     case 't':
-      printw("m3 up: ");
-      cmd[0] &= 0xcf;
-      cmd[0] |= 0x20;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m3 up\n");
+      owi_m3_forward();
       break;
 
     case 'g':
-      printw("m3 off: ");
-      cmd[0] &= 0xcf;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m3 off\n");
+      owi_m3_off();
       break;
 
     case 'b':
-      printw("m3 down: ");
-      cmd[0] &= 0xcf;
-      cmd[0] |= 0x10;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m3 down\n");
+      owi_m3_reverse();
       break;
 
     /* ------- */
@@ -210,23 +88,37 @@ void event_loop()
     /* ------- */
 
     case 'r':
-      printw("m2 up: ");
-      cmd[1] &= 0xcf;
-      cmd[1] |= 0x20;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m2 up\n");
+      owi_m2_forward();
       break;
 
     case 'f':
-      printw("m2 off: ");
-      cmd[1] &= 0xcf;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m2 off\n");
+      owi_m2_off();
       break;
 
     case 'v':
-      printw("m2 down: ");
-      cmd[1] &= 0xcf;
-      cmd[1] |= 0x10;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m2 down\n");
+      owi_m2_reverse();
+      break;
+
+    /* ------- */
+    /* m1      */
+    /* ------- */
+
+    case 'e':
+      printw("m1 open\n");
+      owi_m1_open();
+      break;
+
+    case 'd':
+      printw("m1 off\n");
+      owi_m1_off();
+      break;
+
+    case 'c':
+      printw("m1 close\n");
+      owi_m1_close();
       break;
 
     /* ------- */
@@ -234,21 +126,18 @@ void event_loop()
     /* ------- */
 
     case 'i':
-      printw("m5 (base) clockwise: ");
-      cmd[1] = 2;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m5 (base) clockwise\n");
+      owi_base_clockwise();
       break;
 
     case 'o':
-      printw("m5 (base) off: ");
-      cmd[1] = 0;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m5 (base) off\n");
+      owi_base_off();
       break;
 
     case 'p':
-      printw("m5 (base) counter-clockwise: ");
-      cmd[1] = 1;
-      send_command(cmd[0], cmd[1], cmd[2]);
+      printw("m5 (base) counter-clockwise\n");
+      owi_base_counterclockwise();
       break;
     }
   }
@@ -259,30 +148,14 @@ int main(int ac, char **av)
   initscr(); /* ncurses init */
   noecho();
 
-  libusb_device **devs = detect_robot_arm();
-  if (devs == NULL) {
-    /* Take commands but there is no robot arm to send them to. */
-    devh = NULL;
-  }
-  
-  if (devh == NULL) {
-    printw("*** NO ROBOT ARM FOUND ***\n");
-  }
-  printw("Press 'l' to turn the LED on/off...\n");
-  printw("Press 'q' to quit.\n");
-  refresh();
+  owi_init();
 
   event_loop();
 
-  /* all stop! */
-  send_command(0, 0, 0);
-
-  libusb_close(devh);
-  libusb_free_device_list(devs, 1);
-  libusb_exit(NULL);
-
   echo();
   endwin(); /* ncurses cleanup */
+
+  owi_shutdown();
 
   fprintf(stderr, "Done\n");
   return 0;
