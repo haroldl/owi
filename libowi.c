@@ -142,6 +142,18 @@ int owi_toggle_light()
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
+int owi_light_off()
+{
+  cmd[2] = 0;
+  return owi_send_command(cmd[0], cmd[1], cmd[2]);
+}
+
+int owi_light_on()
+{
+  cmd[2] = 1;
+  return owi_send_command(cmd[0], cmd[1], cmd[2]);
+}
+
 int owi_m4_forward()
 {
   cmd[0] &= 0x3f;
@@ -184,21 +196,21 @@ int owi_m3_reverse()
 
 int owi_m2_forward()
 {
-  cmd[1] &= 0xcf;
-  cmd[1] |= 0x20;
+  cmd[0] &= 0xcf;
+  cmd[0] |= 0x20;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
 int owi_m2_off()
 {
-  cmd[1] &= 0xcf;
+  cmd[0] &= 0xcf;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
 int owi_m2_reverse()
 {
-  cmd[1] &= 0xcf;
-  cmd[1] |= 0x10;
+  cmd[0] &= 0xcf;
+  cmd[0] |= 0x10;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 

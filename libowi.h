@@ -22,6 +22,8 @@ int owi_send_command(unsigned char b1, unsigned char b2, unsigned char b3);
 int owi_stop();
 
 int owi_toggle_light();
+int owi_light_off();
+int owi_light_on();
 
 /* The base is M5 */
 int owi_base_clockwise();
