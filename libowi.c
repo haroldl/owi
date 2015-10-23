@@ -196,21 +196,21 @@ int owi_m3_reverse()
 
 int owi_m2_forward()
 {
-  cmd[0] &= 0xcf;
-  cmd[0] |= 0x20;
+  cmd[0] &= 0xf3;
+  cmd[0] |= 0x08;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
 int owi_m2_off()
 {
-  cmd[0] &= 0xcf;
+  cmd[0] &= 0xf3;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
 int owi_m2_reverse()
 {
-  cmd[0] &= 0xcf;
-  cmd[0] |= 0x10;
+  cmd[0] &= 0xf3;
+  cmd[0] |= 0x04;
   return owi_send_command(cmd[0], cmd[1], cmd[2]);
 }
 
@@ -257,7 +257,13 @@ void owi_shutdown()
   /* all stop! */
   owi_send_command(0, 0, 0);
 
-  libusb_close(devh);
-  libusb_free_device_list(devs, 1);
+  if (devh != NULL) {
+    libusb_close(devh);
+  }
+
+  if (devs != NULL) {
+    libusb_free_device_list(devs, 1);
+  }
+
   libusb_exit(NULL);
 }

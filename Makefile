@@ -4,6 +4,9 @@ CFLAGS = -Wall
 
 all: owi owitest morse
 
+pyowi: pyowi.c libowi.h libowi.c
+	python3 setup.py build
+
 owi: owi.o libowi.o
 	gcc owi.o libowi.o -o owi -lusb-1.0 -lncurses
 
@@ -18,3 +21,4 @@ morse: morse.o libowi.o
 
 clean:
 	-rm -f owi owi.o libowi.o owitest owitest.o
+	-rm -rf build
