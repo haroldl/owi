@@ -18,8 +18,11 @@ Then try it out!
     >>> owiedge.init()
     >>> owiedge.light_on()
     >>> owiedge.light_off()
-    >>> owiedge.toggle_light()
-    >>> owiedge.toggle_light()
+    >>> owiedge.light_toggle()
+    >>> owiedge.light_toggle()
+    >>> owiedge.base_left(1.5)
+    >>> owiedge.base_left(0.5)
+    >>> owiedge.base_right(2)
     >>> owiedge.shutdown()
 
 owi command line program
