@@ -13,9 +13,14 @@ Use `setup.py` to build and install the library:
 
 Then try it out!
 
-    >>> import owi
-    >>> owi.init()
-    >>>
+    $ python
+    >>> import owiedge
+    >>> owiedge.init()
+    >>> owiedge.light_on()
+    >>> owiedge.light_off()
+    >>> owiedge.toggle_light()
+    >>> owiedge.toggle_light()
+    >>> owiedge.shutdown()
 
 owi command line program
 -
