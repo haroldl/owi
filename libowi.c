@@ -29,7 +29,7 @@ static unsigned char cmd[3];
 static struct libusb_device_handle *devh = NULL;
 static libusb_device **devs = NULL;
 
-libusb_device * _owi_find_arm(libusb_device **devs)
+static libusb_device * _owi_find_arm(libusb_device **devs)
 {
   libusb_device *dev;
   int i = 0;
@@ -50,7 +50,7 @@ libusb_device * _owi_find_arm(libusb_device **devs)
   return NULL;
 }
 
-libusb_device ** _owi_detect_robot_arm()
+static libusb_device ** _owi_detect_robot_arm()
 {
   libusb_device **devs;
   libusb_device *dev;

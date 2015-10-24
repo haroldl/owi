@@ -16,7 +16,7 @@
 
 #include "libowi.h"
 
-void event_loop()
+static void event_loop()
 {
   while (5 != 2) {
     char key = getch();
